@@ -1,22 +1,22 @@
 use core {*}
 
-part1 :: () {
+input_as_pairs :: () -> ([..] i32, [..] i32) {
     list1, list2: [..] i32
 
-    pairs := os.get_contents("day01.txt")
-        |> str.split_iter("\n")
-        |> Iterator.map(x => {
-            a, b := str.bisect(x, "   ")
-            return Pair(i32, i32).{
-                conv.parse(i32, a)!
-                conv.parse(i32, b)!
-            }
-        })
+    for p in os.get_contents("day01.txt") |> str.split_iter("\n") {
+        a, b := str.bisect(p, "   ")
+        v1 := conv.parse(i32, a)!
+        v2 := conv.parse(i32, b)!
 
-    for p in pairs {
-        list1->push(p.first)
-        list2->push(p.second)
+        list1->push(v1)
+        list2->push(v2)
     }
+
+    return list1, list2
+}
+
+part1 :: () {
+    list1, list2 := input_as_pairs()
 
     Slice.sort(list1, (a, b) => a - b)
     Slice.sort(list2, (a, b) => a - b)
@@ -31,16 +31,7 @@ part1 :: () {
 }
 
 part2 :: () {
-    list1, list2: [..] i32
-
-    for p in os.get_contents("day01.txt") |> str.split_iter("\n") {
-        a, b := str.bisect(p, "   ")
-        v1 := conv.parse(i32, a)!
-        v2 := conv.parse(i32, b)!
-
-        list1->push(v1)
-        list2->push(v2)
-    }
+    list1, list2 := input_as_pairs()
 
     total: u64 = 0
     for v in list1 {
@@ -51,5 +42,6 @@ part2 :: () {
 }
 
 main :: () {
+    part1()
     part2()
 }
