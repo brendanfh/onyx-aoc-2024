@@ -1,0 +1,55 @@
+use core {*}
+
+part1 :: () {
+    list1, list2: [..] i32
+
+    pairs := os.get_contents("day01.txt")
+        |> str.split_iter("\n")
+        |> Iterator.map(x => {
+            a, b := str.bisect(x, "   ")
+            return Pair(i32, i32).{
+                conv.parse(i32, a)!
+                conv.parse(i32, b)!
+            }
+        })
+
+    for p in pairs {
+        list1->push(p.first)
+        list2->push(p.second)
+    }
+
+    Slice.sort(list1, (a, b) => a - b)
+    Slice.sort(list2, (a, b) => a - b)
+
+    Iterator.zip(
+        Iterator.from(list1)
+        Iterator.from(list2)
+    )
+    |> Iterator.map(x => math.abs(x.first - x.second))
+    |> Iterator.sum()
+    |> printf("Part 1: {}\n", _)
+}
+
+part2 :: () {
+    list1, list2: [..] i32
+
+    for p in os.get_contents("day01.txt") |> str.split_iter("\n") {
+        a, b := str.bisect(p, "   ")
+        v1 := conv.parse(i32, a)!
+        v2 := conv.parse(i32, b)!
+
+        list1->push(v1)
+        list2->push(v2)
+    }
+
+    total: u64 = 0
+    for v in list1 {
+        total += ~~(v * Slice.count_where(list2, [x](x == v)) )
+    }
+
+    printf("Part 2: {}\n", total)
+}
+
+main :: () {
+    part2()
+}
