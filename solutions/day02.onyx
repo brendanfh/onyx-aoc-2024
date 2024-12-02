@@ -1,0 +1,68 @@
+use core {*}
+
+// For some reason, this isn't in the standard library...
+Iterator.concat :: iter.concat
+
+meets_constraint :: (diff, last_diff) => {
+    if math.abs(diff) < 1 || math.abs(diff) > 3 {
+        return false
+    }
+    
+    if last_diff != 0 && math.sign(last_diff) != math.sign(diff) {
+        return false
+    }
+    
+    return true
+}
+
+is_safe :: (nums: [] i32) -> bool {
+    last_diff := 0
+    
+    for i in nums.count - 1 {
+        diff := nums[i + 1] - nums[i]
+        
+        if !meets_constraint(diff, last_diff) {
+            return false
+        }
+        
+        last_diff = diff
+    }
+    
+    return true
+}
+
+main :: () {
+    defer alloc.clear_temp_allocator()
+    
+    part1, part2: i32
+    for line in os.get_contents("inputs/day02.txt") |> str.split_iter("\n") {
+        use nums := str.split_iter(line, " ")
+            |> Iterator.flatten(x => conv.parse(i32, x))
+            |> Iterator.collect()
+            
+        if is_safe(nums) {
+            part1 += 1
+            part2 += 1
+            continue
+        }
+            
+        alloc.arena.auto(dest=[](context.temp_allocator))
+        
+        safe := Iterator.from(0 .. nums.count)
+            |> Iterator.map((n) use (nums) =>
+                Iterator.concat(
+                    Iterator.from(nums) |> Iterator.take(n)
+                    Iterator.from(nums) |> Iterator.skip(n + 1)
+                )
+                |> Iterator.collect(context.temp_allocator)
+            )
+            |> Iterator.some(x => is_safe(x))
+            
+        if safe {
+            part2 += 1
+        }
+    }
+    
+    printf("Part 1: {}\n", part1)
+    printf("Part 2: {}\n", part2)
+}

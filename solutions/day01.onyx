@@ -3,7 +3,7 @@ use core {*}
 input_as_pairs :: () -> ([..] i32, [..] i32) {
     list1, list2: [..] i32
 
-    for p in os.get_contents("day01.txt") |> str.split_iter("\n") {
+    for p in os.get_contents("inputs/day01.txt") |> str.split_iter("\n") {
         a, b := str.bisect(p, "   ")
         v1 := conv.parse(i32, a)!
         v2 := conv.parse(i32, b)!
