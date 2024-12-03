@@ -1,0 +1,105 @@
+use core {*}
+
+read_int :: (s: &str) -> i32 {
+    v := 0
+    while s && s.data[0]->is_num() {
+        v = v * 10 + ~~(s.data[0] - '0')
+        str.advance(s)
+    }
+
+    return v
+}
+
+Token :: union {
+    Word: str
+    Number: i32
+    OpenParen: void
+    CloseParen: void
+    Comma: void
+    Junk: void
+}
+
+tokenize_input :: (input: str) -> Iterator(Token) {
+    next :: (use _: &$C) -> ? Token {
+        while s {
+            if s[0]->is_alpha() {
+                len := 1
+                while s[len]->is_alpha() || s[len] == '\'' {
+                    len += 1
+                }
+
+                defer str.advance(&s, len)
+                return Token.{ Word = s[0 .. len] }
+            }
+
+            if s[0]->is_num() {
+                a := read_int(&s)
+                return Token.{ Number = a }
+            }
+
+            if s[0] == '(' {
+                str.advance(&s)
+                return Token.{ OpenParen = .{} }
+            }
+
+            if s[0] == ')' {
+                str.advance(&s)
+                return Token.{ CloseParen = .{} }
+            }
+
+            if s[0] == ',' {
+                str.advance(&s)
+                return Token.{ Comma = .{} }
+            }
+
+            str.advance(&s)
+            return Token.{ Junk = .{} }
+        }
+
+        return .None
+    }
+
+    return Iterator.generator(&.{ s = input }, next)
+}
+
+main :: () {
+    input := os.get_contents("./inputs/day03.txt")
+
+    total := 0
+    enabled := true
+    token_stream := tokenize_input(input)
+    for token in token_stream {
+        if !token.Word do continue
+
+        word := token.Word!
+        if str.ends_with(word, "mul") {
+            expect_token(.OpenParen)
+            a := expect_token(.Number).Number!
+            expect_token(.Comma)
+            b := expect_token(.Number).Number!
+            expect_token(.CloseParen)
+
+            if enabled do total += a * b
+        }
+
+        if str.ends_with(word, "do") {
+            expect_token(.OpenParen)
+            expect_token(.CloseParen)
+            enabled = true
+        }
+
+        if str.ends_with(word, "don't") {
+            expect_token(.OpenParen)
+            expect_token(.CloseParen)
+            enabled = false
+        }
+
+        expect_token :: macro (t: Token.tag_enum) -> Token {
+            next_tkn := Iterator.next(token_stream)!
+            if next_tkn.tag != t do continue
+            return next_tkn
+        }
+    }
+    
+    printf("Part 2: {}\n", total)
+}

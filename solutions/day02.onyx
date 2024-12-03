@@ -36,9 +36,11 @@ main :: () {
     
     part1, part2: i32
     for line in os.get_contents("inputs/day02.txt") |> str.split_iter("\n") {
-        use nums := str.split_iter(line, " ")
+        alloc.arena.auto(dest=[](context.temp_allocator))
+        
+        nums := str.split_iter(line, " ")
             |> Iterator.flatten(x => conv.parse(i32, x))
-            |> Iterator.collect()
+            |> Iterator.collect(context.temp_allocator)
             
         if is_safe(nums) {
             part1 += 1
@@ -46,8 +48,6 @@ main :: () {
             continue
         }
             
-        alloc.arena.auto(dest=[](context.temp_allocator))
-        
         safe := Iterator.from(0 .. nums.count)
             |> Iterator.map((n) use (nums) =>
                 Iterator.concat(
