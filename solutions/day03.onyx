@@ -21,42 +21,29 @@ Token :: union {
 
 tokenize_input :: (input: str) -> Iterator(Token) {
     next :: (use _: &$C) -> ? Token {
-        while s {
-            if s[0]->is_alpha() {
-                len := 1
-                while s[len]->is_alpha() || s[len] == '\'' {
-                    len += 1
-                }
-
-                defer str.advance(&s, len)
-                return Token.{ Word = s[0 .. len] }
+        if !s do return .None
+        if s[0]->is_alpha() {
+            len := 1
+            while s[len]->is_alpha() || s[len] == '\'' {
+                len += 1
             }
 
-            if s[0]->is_num() {
-                a := read_int(&s)
-                return Token.{ Number = a }
-            }
-
-            if s[0] == '(' {
-                str.advance(&s)
-                return Token.{ OpenParen = .{} }
-            }
-
-            if s[0] == ')' {
-                str.advance(&s)
-                return Token.{ CloseParen = .{} }
-            }
-
-            if s[0] == ',' {
-                str.advance(&s)
-                return Token.{ Comma = .{} }
-            }
-
-            str.advance(&s)
-            return Token.{ Junk = .{} }
+            defer str.advance(&s, len)
+            return Token.{ Word = s[0 .. len] }
         }
 
-        return .None
+        if s[0]->is_num() {
+            a := read_int(&s)
+            return Token.{ Number = a }
+        }
+
+        defer str.advance(&s)
+
+        if s[0] == '(' do return Token.{ OpenParen = .{} }
+        if s[0] == ')' do return Token.{ CloseParen = .{} }
+        if s[0] == ',' do return Token.{ Comma = .{} }
+
+        return Token.{ Junk = .{} }
     }
 
     return Iterator.generator(&.{ s = input }, next)
