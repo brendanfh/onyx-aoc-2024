@@ -1,0 +1,143 @@
+use core {*}
+
+part1 :: (grid: [] [] u8) -> i32 {
+    h := grid.length
+    w := grid[0].length
+
+    total := 0
+    for y in h {
+        for x in w - 3 {
+            for c, i in "XMAS" {
+                if grid[x + i][y] != c do continue continue
+            }
+            total += 1
+        }
+    }
+
+    for y in h {
+        for x in w - 3 {
+            for c, i in "SAMX" {
+                if grid[x + i][y] != c do continue continue
+            }
+            total += 1
+        }
+    }
+
+    for y in h - 3 {
+        for x in w {
+            for c, i in "XMAS" {
+                if grid[x][y + i] != c do continue continue
+            }
+            total += 1
+        }
+    }
+
+    for y in h - 3 {
+        for x in w {
+            for c, i in "SAMX" {
+                if grid[x][y + i] != c do continue continue
+            }
+            total += 1
+        }
+    }
+
+    for y in h - 3 {
+        for x in w - 3 {
+            for c, i in "XMAS" {
+                if grid[x + i][y + i] != c do continue continue
+            }
+            total += 1
+        }
+    }
+
+    for y in h - 3 {
+        for x in w - 3 {
+            for c, i in "SAMX" {
+                if grid[x + i][y + i] != c do continue continue
+            }
+            total += 1
+        }
+    }
+
+    for y in h - 3 {
+        for x in 3 .. w {
+            for c, i in "XMAS" {
+                if grid[x - i][y + i] != c do continue continue
+            }
+            total += 1
+        }
+    }
+
+    for y in h - 3 {
+        for x in 3 .. w {
+            for c, i in "SAMX" {
+                if grid[x - i][y + i] != c do continue continue
+            }
+            total += 1
+        }
+    }
+
+    return total
+}
+
+part2 :: (grid: [] [] u8) -> i32 {
+    h := grid.length
+    w := grid[0].length
+
+    total := 0
+
+    for y in h - 2 {
+        for x in w - 2 {
+            if grid[x + 0][y + 0] != 'M' do continue
+            if grid[x + 2][y + 0] != 'S' do continue
+            if grid[x + 1][y + 1] != 'A' do continue
+            if grid[x + 0][y + 2] != 'M' do continue
+            if grid[x + 2][y + 2] != 'S' do continue
+            total += 1
+        }
+    }
+
+    for y in h - 2 {
+        for x in w - 2 {
+            if grid[x + 0][y + 0] != 'S' do continue
+            if grid[x + 2][y + 0] != 'M' do continue
+            if grid[x + 1][y + 1] != 'A' do continue
+            if grid[x + 0][y + 2] != 'S' do continue
+            if grid[x + 2][y + 2] != 'M' do continue
+            total += 1
+        }
+    }
+
+    for y in h - 2 {
+        for x in w - 2 {
+            if grid[x + 0][y + 0] != 'M' do continue
+            if grid[x + 2][y + 0] != 'M' do continue
+            if grid[x + 1][y + 1] != 'A' do continue
+            if grid[x + 0][y + 2] != 'S' do continue
+            if grid[x + 2][y + 2] != 'S' do continue
+            total += 1
+        }
+    }
+    
+    for y in h - 2 {
+        for x in w - 2 {
+            if grid[x + 0][y + 0] != 'S' do continue
+            if grid[x + 2][y + 0] != 'S' do continue
+            if grid[x + 1][y + 1] != 'A' do continue
+            if grid[x + 0][y + 2] != 'M' do continue
+            if grid[x + 2][y + 2] != 'M' do continue
+            total += 1
+        }
+    }
+
+    return total
+}
+
+main :: () {
+    grid := os.get_contents("inputs/day04.txt")
+        |> str.split_iter("\n")
+        |> Iterator.collect()
+
+    printf("Part 1: {}\n", part1(grid))
+    printf("Part 2: {}\n", part2(grid))
+}

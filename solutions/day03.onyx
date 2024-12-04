@@ -2,7 +2,7 @@ use core {*}
 
 read_int :: (s: &str) -> i32 {
     v := 0
-    while s && s.data[0]->is_num() {
+    while s && u8.is_num(s.data[0]) {
         v = v * 10 + ~~(s.data[0] - '0')
         str.advance(s)
     }
@@ -22,9 +22,10 @@ Token :: union {
 tokenize_input :: (input: str) -> Iterator(Token) {
     next :: (use _: &$C) -> ? Token {
         if !s do return .None
-        if s[0]->is_alpha() {
+
+        if u8.is_alpha(s[0]) {
             len := 1
-            while s[len]->is_alpha() || s[len] == '\'' {
+            while u8.is_alpha(s[len]) || s[len] == '\'' {
                 len += 1
             }
 
@@ -32,7 +33,7 @@ tokenize_input :: (input: str) -> Iterator(Token) {
             return Token.{ Word = s[0 .. len] }
         }
 
-        if s[0]->is_num() {
+        if u8.is_num(s[0]) {
             a := read_int(&s)
             return Token.{ Number = a }
         }
