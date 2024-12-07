@@ -1,0 +1,38 @@
+use core {*}
+
+Pos :: [2] i32
+
+main :: () {
+    grid := os.get_contents("./inputs/day06.txt")
+        |> str.split_iter("\n")
+        |> Iterator.collect()
+
+    dir := Pos.{ 0, -1 }
+    pos := do -> Pos {
+        for y in grid.length {
+            for x in grid[y].length {
+                if grid[y][x] == '^' {
+                    return .{ x, y }
+                }
+            }
+        }
+    }
+
+    grid[pos.y][pos.x] = '.'
+
+    while pos.x >= 0 && pos.x < grid[0].length && pos.y >= 0 && pos.y < grid.length {
+        next := pos + dir
+        if grid[next.y][next.x] == '#' {
+            dir = .{ -dir.y, dir.x }
+            continue
+        }
+
+        grid[pos.y][pos.x] = 'X'
+        pos = next
+    }
+
+    Iterator.from(grid)
+        |> Iterator.map(x => Iterator.from(x) |> Iterator.count(x => x == 'X'))
+        |> Iterator.sum()
+        |> printf("Part 1: {}\n", _)
+}
