@@ -1,0 +1,60 @@
+use core.heap {*}
+use core {*}
+
+main :: () {
+    input := os.get_contents("./inputs/day05.txt")
+    rules, queries := str.bisect(input, "\n\n")
+
+    deps := Iterator.from(0 .. 100)
+        |> Iterator.map(x => Array.make(u32))
+        |> Iterator.collect()
+
+    for rule in str.split_iter(rules, '\n') {
+        sa, sb := str.bisect(rule, '|')
+        a := conv.parse(u32, sa)!
+        b := conv.parse(u32, sb)!
+
+        Array.push(&deps[a], b)
+    }
+
+    qs := str.split_iter(queries, "\n")
+        |> Iterator.map(query =>
+            str.split_iter(query, ",")
+            |> Iterator.flatten(x => conv.parse(u32, x))
+            |> Iterator.collect()
+        )
+        |> Iterator.collect()
+
+    // Part 1
+    Iterator.from(qs)
+    |> Iterator.filter((x) use (deps) => check_rules(deps, x))
+    |> Iterator.map(x => x[x.length / 2])
+    |> Iterator.sum()
+    |> printf("Part 1: {}\n", _)
+
+    Iterator.from(qs)
+    |> Iterator.filter((x) use (deps) => !check_rules(deps, x))
+    |> Iterator.map((q) use (deps) => Slice.sort(q, (x, y) use (deps) => {
+        if check_rules(deps, cast([] u32) u32.[x, y]) {
+            return -1
+        } else {
+            return 1
+        }
+    }))
+    |> Iterator.map(x => x[x.length / 2])
+    |> Iterator.sum()
+    |> printf("Part 2: {}\n", _)
+}
+
+check_rules :: (deps, nums) => {
+    for i in 1 .. nums.length {
+        for j in 0 .. i {
+            if deps[nums[i]]->contains(nums[j]) {
+                return false
+            }
+        }
+    }
+
+    return true
+}
+
