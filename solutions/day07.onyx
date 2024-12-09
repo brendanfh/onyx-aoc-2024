@@ -1,0 +1,60 @@
+use core {*}
+
+int_ends_with :: (v, n: u64) -> ? u64 {
+    a, b := v, n
+    while b > 0 && (a % 10) == (b % 10) {
+        a /= 10
+        b /= 10
+    }
+
+    if b > 0 do return .None
+    return a
+}
+
+is_valid :: (target: u64, nums: [] u64) -> bool {
+    // RTL through numbers:
+    // If number can divide the current value:
+    //    First check the branch where next value is (value / number)
+    // In either case:
+    //    Check the branch where next value is (value - number)
+    // See if any branch can get you to the first number
+
+    if nums.length == 1 {
+        return nums[0] == target
+    }
+
+    n := nums[nums.length - 1]
+    if target % n == 0 {
+        if is_valid(target / n, nums[0 .. nums.length - 1]) do return true
+    }
+
+    int_ends_with(target, n)->with([v] {
+        if is_valid(v, nums[0 .. nums.length - 1]) do return true
+    })
+    
+    return is_valid(target - n, nums[0 .. nums.length - 1])
+}
+
+main :: () {
+    Case :: struct {
+        target: u64
+        nums: [] u64
+    }
+
+    os.get_contents("./inputs/day07.txt")
+        |> str.split_iter("\n")
+        |> Iterator.map(line => {
+            target_s, num_s := str.bisect(line, ": ")
+
+            target := conv.parse(u64, target_s)!
+            nums   := str.split_iter(num_s, ' ')
+                |> Iterator.flatten(x => conv.parse(u64, x))
+                |> Iterator.collect()
+
+            return Case.{target, nums}
+        })
+        |> Iterator.filter(c => is_valid(c.target, c.nums))
+        |> Iterator.map(c => c.target)
+        |> Iterator.sum()
+        |> printf("Part 2: {}\n", _)
+}
