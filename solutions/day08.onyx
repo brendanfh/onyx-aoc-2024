@@ -1,0 +1,75 @@
+use core {*}
+
+Pos :: [2] i32
+
+Iterator.pairs :: (xs: [] $T) -> Iterator(Pair(T, T)) {
+    return Iterator.generator(
+        &.{ i = 0, j = 1, xs = xs }
+
+        (use c: &$C) -> ? Pair(T, T) {
+            if j >= xs.length {
+                return .None
+            }
+
+            defer {
+                i += 1
+                if i >= j {
+                    i = 0
+                    j += 1
+                }
+            }
+
+            return Pair.make(xs[i], xs[j])
+        }
+    )
+}
+
+antinode_walker :: (start: Pos, diff: Pos, w, h: u32, results: &[..] Pos) {
+    x := start
+    while x.x >= 0 && x.x < w && x.y >= 0 && x.y < h {
+        results->push(x)
+        x += diff
+    }
+}
+
+generate_antinodes :: (pos: [] Pos, w, h: u32) -> [] Pos {
+    output: [..] Pos
+
+    for p in Iterator.pairs(pos) {
+        diff := p.second - p.first
+        antinode_walker(p.second, diff, w, h, &output)
+        antinode_walker(p.first, .{ -diff.x, -diff.y }, w, h, &output)
+    }
+
+    return output
+}
+
+main :: () {
+    locs: Map(u8, [..] Pos)
+
+    lines := os.get_contents("./inputs/day08.txt")
+        |> str.split_iter("\n")
+
+    w, h: u32
+    for line, y in lines {
+        w = line.length
+        h += 1
+        for ch, x in line {
+            if ch == '.' do continue
+
+            arr := locs->get_ptr_or_create(ch)
+            Array.push(arr, .{x, y})
+        }
+    }
+
+    antinode_map := make([] bool, w * h)
+    for entries in locs->as_iter() {
+        for pos in generate_antinodes(entries.value, w, h) {
+            antinode_map[pos.y * w + pos.x] = true
+        }
+    }
+
+    Iterator.from(antinode_map)
+    |> Iterator.count(x => x)
+    |> printf("Part 2: {}\n", _)
+}
