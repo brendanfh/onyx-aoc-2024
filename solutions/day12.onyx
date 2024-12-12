@@ -1,0 +1,67 @@
+use core {*}
+
+Pos :: [2] i32
+
+#overload
+hash.hash :: (p: Pos) => p.x * 17 + p.y * 19
+
+floodfill :: (letters: [] [] u8, start: Pos, mark_table: [] bool, found: &Set(Pos)) {
+    ch :: macro (p: Pos) => {
+        return letters[p.y][p.x]
+    }
+
+    to_match := ch(start)
+    queue := Array.make(.[ start ])
+    while queue {
+        pos := queue[0]
+        Array.delete(&queue, 0)
+
+        if Set.has(found, pos) do continue
+
+        Set.insert(found, pos)
+        mark_table[pos.y * letters[0].length + pos.x] = true
+
+        if ch(pos + .{ -1, 0 }) == to_match do Array.push(&queue, pos + .{ -1, 0 })
+        if ch(pos + .{  1, 0 }) == to_match do Array.push(&queue, pos + .{  1, 0 })
+        if ch(pos + .{ 0, -1 }) == to_match do Array.push(&queue, pos + .{ 0, -1 })
+        if ch(pos + .{ 0,  1 }) == to_match do Array.push(&queue, pos + .{ 0,  1 })
+    }
+}
+
+get_perimeter :: (l: &Set(Pos)) -> i32 {
+    perimeter := 0
+
+    for c in l->as_iter() {
+        if !l->has(*c + .{ -1, 0 }) do perimeter += 1
+        if !l->has(*c + .{  1, 0 }) do perimeter += 1
+        if !l->has(*c + .{ 0, -1 }) do perimeter += 1
+        if !l->has(*c + .{ 0,  1 }) do perimeter += 1
+    }
+
+    return perimeter
+}
+
+main :: () {
+    letters := os.get_contents("./inputs/day12.txt")
+        |> str.split_iter("\n")
+        |> Iterator.collect()
+
+    w, h := letters[0].length, letters.length
+    marked := make([] bool, w * h)
+
+    groups: [..] Set(Pos)
+    for y in h {
+        for x in w {
+            if marked[y * w + x] do continue
+
+            l := Array.alloc_one(&groups)
+            *l = Set.make(Pos)
+            floodfill(letters, .{ x, y }, marked, l)
+        }
+    }
+
+    Iterator.from(groups)
+    |> Iterator.map(x => x.entries.length * get_perimeter(x))
+    |> Iterator.sum()
+    |> printf("Part 1: {}\n", _)
+}
